@@ -1,0 +1,226 @@
+# Which sources the app scrapes. Set `enabled: false` to turn one off.
+#
+# Only tech listings whose source states a posting date within the last 48 hours
+# are kept; everything else is dropped. Built-in sources are fetched with Scrapling.
+
+refresh_hours: 2   # don't re-scrape a source more often than this
+
+builtin:
+  # --- jobs ---
+  companies:    { enabled: true }   # career boards of the companies listed below
+  hubs:         { enabled: true }   # Amazon, Microsoft & Workday companies' African hubs (see hubs: below)
+  early_career: { enabled: true }   # SimplifyJobs internship + new-grad lists, New-Grad-2027
+  yc:           { enabled: true }   # Y Combinator startup jobs (HTML page, scraped)
+  hn_hiring:    { enabled: true }   # "Ask HN: Who is hiring?" monthly thread
+  himalayas:    { enabled: true }   # remote tech jobs API
+  jobicy:       { enabled: true }   # remote jobs API (dev, engineering, data science)
+  wwr:          { enabled: true }   # We Work Remotely, 6 RSS feeds
+  arbeitnow:    { enabled: true }   # Europe (mostly Germany), on-site and remote
+  # --- events ---
+  dev_events:   { enabled: true }   # dev.events: conferences, meetups, hackathons
+
+# Big employers' engineering hubs in Africa, from their own career-site search.
+# Amazon and Microsoft are always checked; add companies whose careers site runs
+# on Workday (URL like https://<host>/en-US/<site>) under `workday:`.
+hubs:
+  countries: [Kenya, South Africa, Nigeria, Egypt, Ghana, Rwanda, Morocco]
+  workday:
+    Mastercard: { host: mastercard.wd1.myworkdayjobs.com, tenant: mastercard, site: CorporateCareers }
+    Absa:       { host: absa.wd3.myworkdayjobs.com, tenant: absa, site: ABSAcareersite }
+    Cisco:      { host: cisco.wd5.myworkdayjobs.com, tenant: cisco, site: Cisco_Careers }
+
+# Companies whose own career boards are checked, by the platform they use.
+# The key is the company's board name in that platform's URL, e.g.
+#   https://boards.greenhouse.io/<key>   https://jobs.lever.co/<key>
+#   https://jobs.ashbyhq.com/<key>       https://apply.workable.com/<key>
+#   https://<key>.breezy.hr              https://jobs.smartrecruiters.com/<key>
+# Add any company you want to follow.
+companies:
+  greenhouse:
+    # AI & data
+    anthropic: Anthropic
+    xai: xAI
+    scaleai: Scale AI
+    togetherai: Together AI
+    databricks: Databricks
+    fivetran: Fivetran
+    mongodb: MongoDB
+    elastic: Elastic
+    cockroachlabs: Cockroach Labs
+    planetscale: PlanetScale
+    stabilityai: Stability AI
+    graphcore: Graphcore
+    # dev tools & infrastructure
+    gitlab: GitLab
+    vercel: Vercel
+    netlify: Netlify
+    cloudflare: Cloudflare
+    fastly: Fastly
+    datadog: Datadog
+    grafanalabs: Grafana Labs
+    newrelic: New Relic
+    pagerduty: PagerDuty
+    circleci: CircleCI
+    buildkite: Buildkite
+    jfrog: JFrog
+    launchdarkly: LaunchDarkly
+    tailscale: Tailscale
+    twilio: Twilio
+    okta: Okta
+    zscaler: Zscaler
+    bitwarden: Bitwarden
+    contentful: Contentful
+    storyblok: Storyblok
+    superset: Superset
+    # open source
+    mozilla: Mozilla
+    canonical: Canonical
+    wikimedia: Wikimedia Foundation
+    # product companies
+    stripe: Stripe
+    figma: Figma
+    discord: Discord
+    dropbox: Dropbox
+    reddit: Reddit
+    pinterest: Pinterest
+    airbnb: Airbnb
+    lyft: Lyft
+    instacart: Instacart
+    duolingo: Duolingo
+    asana: Asana
+    airtable: Airtable
+    calendly: Calendly
+    squarespace: Squarespace
+    twitch: Twitch
+    roblox: Roblox
+    epicgames: Epic Games
+    riotgames: Riot Games
+    intercom: Intercom
+    klaviyo: Klaviyo
+    braze: Braze
+    attentive: Attentive
+    mixpanel: Mixpanel
+    lattice: Lattice
+    cultureamp: Culture Amp
+    smartsheet: Smartsheet
+    wrike: Wrike
+    typeform: Typeform
+    yext: Yext
+    remote: Remote
+    # fintech
+    coinbase: Coinbase
+    robinhood: Robinhood
+    affirm: Affirm
+    brex: Brex
+    chime: Chime
+    gusto: Gusto
+    mercury: Mercury
+    carta: Carta
+    sofi: SoFi
+    toast: Toast
+    # hardware, robotics, space
+    spacex: SpaceX
+    andurilindustries: Anduril
+    waymo: Waymo
+    nuro: Nuro
+    samsara: Samsara
+    verkada: Verkada
+    lucidmotors: Lucid Motors
+    relativity: Relativity Space
+    flexport: Flexport
+    # Africa
+    moniepoint: Moniepoint       # Nigeria
+    jumia: Jumia                 # pan-African
+    grey: Grey                   # Nigeria
+    branch: Branch               # Kenya, Nigeria
+    alxafrica: ALX Africa        # pan-African
+    luno: Luno                   # South Africa, Nigeria
+    ozow: Ozow                   # South Africa
+    entersekt: Entersekt         # South Africa
+  lever:
+    palantir: Palantir
+    spotify: Spotify
+    zoox: Zoox
+    binance: Binance
+    wealthfront: Wealthfront
+    outreach: Outreach
+    toptal: Toptal
+    gopuff: Gopuff
+    metabase: Metabase
+    # Africa
+    tala: Tala                   # Kenya
+    apolloagriculture: Apollo Agriculture   # Kenya, Zambia
+  ashby:
+    # AI
+    openai: OpenAI
+    cohere: Cohere
+    perplexity: Perplexity
+    elevenlabs: ElevenLabs
+    runway: Runway
+    harvey: Harvey
+    writer: Writer
+    midjourney: Midjourney
+    cerebras: Cerebras
+    baseten: Baseten
+    fireworks: Fireworks AI
+    lambda: Lambda
+    crusoe: Crusoe
+    modal: Modal
+    anyscale: Anyscale
+    langchain: LangChain
+    llamaindex: LlamaIndex
+    pinecone: Pinecone
+    weaviate: Weaviate
+    # dev tools
+    cursor: Cursor
+    replit: Replit
+    linear: Linear
+    supabase: Supabase
+    posthog: PostHog
+    sentry: Sentry
+    clerk: Clerk
+    resend: Resend
+    warp: Warp
+    zed: Zed
+    hex: Hex
+    n8n: n8n
+    redis: Redis
+    influxdata: InfluxData
+    airbyte: Airbyte
+    prefect: Prefect
+    astronomer: Astronomer
+    sanity: Sanity
+    zapier: Zapier
+    buffer: Buffer
+    # product & fintech
+    notion: Notion
+    ramp: Ramp
+    plaid: Plaid
+    snowflake: Snowflake
+    benchling: Benchling
+    vanta: Vanta
+    drata: Drata
+    ashby: Ashby
+    # Africa
+    andela: Andela               # pan-African
+    lemfi: LemFi                 # Nigeria, UK
+    m-kopa: M-KOPA               # Kenya, Ghana, Uganda, Nigeria
+    thndr: Thndr                 # Egypt
+  workable:
+    huggingface: Hugging Face
+    # Africa
+    kuda: Kuda                   # Nigeria
+    fairmoney: FairMoney         # Nigeria
+    renmoney: Renmoney           # Nigeria
+  breezy:
+    # Africa
+    busha: Busha                 # Nigeria, Kenya
+    gozem: Gozem                 # Togo, Gabon, Cameroon
+    lulalend: Lula               # South Africa
+    mukuru: Mukuru               # South Africa, Zimbabwe, Botswana
+    turaco: Turaco               # Kenya, Uganda, Nigeria
+    gokada: Gokada               # Nigeria
+    prospa: Prospa               # Nigeria
+  smartrecruiters:
+    # Africa
+    palmpay: PalmPay             # Nigeria

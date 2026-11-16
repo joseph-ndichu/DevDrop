@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DevDrop</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">&lt;/&gt;</span>
+        <div>
+          <h1>DevDrop</h1>
+          <p class="sub">Only what was posted in the last 48 hours</p>
+        </div>
+      </div>
+      <button id="refreshBtn" class="btn" type="button">Refresh</button>
+    </div>
+  </header>
+
+  <section class="filters">
+    <div class="wrap filters-inner">
+      <div class="segmented" id="kindTabs" role="tablist" aria-label="Type">
+        <button role="tab" data-kind="job" aria-selected="true">Jobs <span class="n" id="nJob"></span></button>
+        <button role="tab" data-kind="event">Events <span class="n" id="nEvent"></span></button>
+        <button role="tab" data-kind="africa" title="Jobs in Africa, or remote and open to Africa">Africa <span class="n" id="nAfrica"></span></button>
+      </div>
+      <div class="segmented" id="hoursTabs" aria-label="Posted within">
+        <button data-hours="24" aria-selected="true">Last 24 h</button>
+        <button data-hours="48">2 days</button>
+      </div>
+      <div class="chips" id="workModeChips" role="group" aria-label="Work mode"></div>
+      <input id="search" type="search" placeholder="Search: python, react, Nairobi…" aria-label="Search">
+    </div>
+    <div class="wrap filters-inner second" id="countryRow" hidden>
+      <div class="chips" id="countryChips" role="group" aria-label="Country"></div>
+    </div>
+    <div class="wrap filters-inner second">
+      <div class="chips" id="levelChips" role="group" aria-label="Level"></div>
+      <div class="selects">
+        <select id="categoryFilter" aria-label="Field"></select>
+        <select id="typeFilter" aria-label="Job type"></select>
+        <select id="sourceFilter" aria-label="Source"><option value="">All sources</option></select>
+      </div>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <div id="statusLine" class="status-line" role="status"></div>
+    <div id="results"></div>
+  </main>
+
+  <footer class="footer">
+    <div class="wrap">
+      Jobs from companies' own career boards (Greenhouse, Lever, Ashby, Workable, Breezy, SmartRecruiters),
+      Amazon, Microsoft and Workday career sites,
+      <a href="https://github.com/SimplifyJobs">SimplifyJobs</a> and
+      <a href="https://github.com/vanshb03/New-Grad-2027">New-Grad-2027</a> lists,
+      <a href="https://www.ycombinator.com/jobs">Y Combinator</a>, <a href="https://news.ycombinator.com">Hacker News</a>,
+      <a href="https://himalayas.app">Himalayas</a>, <a href="https://jobicy.com">Jobicy</a>,
+      <a href="https://weworkremotely.com">We Work Remotely</a>, <a href="https://www.arbeitnow.com">Arbeitnow</a>,
+      <a href="https://www.myjobmag.co.ke">MyJobMag</a>, <a href="https://www.brightermonday.co.ke">BrighterMonday</a>
+      and <a href="https://www.jobberman.com">Jobberman</a>.
+      Events from <a href="https://dev.events">dev.events</a>.
+    </div>
+  </footer>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
