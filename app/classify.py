@@ -7,13 +7,13 @@ from __future__ import annotations
 
 import re
 
-from .africa import africa_scope
+from .kenya import kenya_scope
 from .models import Item
 
 LEVELS = ["Internship", "Junior", "Mid", "Senior", "Lead / Staff", "Manager", "Unspecified"]
 
 _LEVEL_RULES = [  # first match wins, so the order matters
-    ("Internship", r"\b(intern(ship)?|trainee|apprentice(ship)?|working student|werkstudent|praktikum|placement student|stagiaire|stage|co-?op)\b"),
+    ("Internship", r"\b(intern(ship)?|attach(ment|ee|é)|industrial attachment|trainee|apprentice(ship)?|working student|werkstudent|praktikum|placement student|stagiaire|stage|co-?op)\b"),
     # "Product/Project/Program Manager" is a role, not a people-manager level.
     ("Manager", r"\b(?<!product )(?<!project )(?<!program )(?<!relations )(?<!media )(?<!account )manager\b"
                 r"|\b(director|head of|vp|vice president|cto|cio|chief|avp)\b"),
@@ -43,21 +43,59 @@ _HINT_LEVELS = [  # source labels -> level
     ("Mid", r"mid"),
 ]
 
-JOB_FIELDS = ["Full-stack", "Frontend", "Backend", "Mobile", "Data & AI", "DevOps & Cloud",
-              "Security", "QA & Testing", "Design & Product", "Software Engineering", "Other tech"]
+# Bump when the tech filter or field rules change: listings are then re-fetched,
+# so jobs the old rules dropped come in.
+RULES_VERSION = 2
 
+JOB_FIELDS = ["Full-stack", "Frontend", "Backend", "Mobile", "Data & AI", "DevOps & Cloud",
+              "IT & Support", "Security", "QA & Testing", "Design & Product", "Software Engineering", "Other tech"]
+
+# First match on the title wins, so the order matters.
 _FIELD_RULES = [
     ("Full-stack", r"full[\s-]?stack"),
-    ("Mobile", r"\b(mobile|ios|android|flutter|react native|swift|kotlin)\b"),
-    ("Security", r"\b(cyber)?security\b|\b(cyber|pentest(er|ing)?|penetration|soc|appsec|devsecops|iam)\b"),
-    ("QA & Testing", r"\b(qa|quality assurance|test(er|ing)?|sdet)\b"),
-    ("DevOps & Cloud", r"\b(devops|sre|site reliability|platform|infrastructure|cloud (engineer|architect|ops)|kubernetes|sysadmin|system administrator|network|it support)\b"),
-    ("Design & Product", r"\b(design(er)?|ux|ui|product (manager|owner|lead))\b"),
-    ("Data & AI", r"\b(data|machine learning|ml|ai|llm|analytics|analyst|scientist|bi|nlp|computer vision|research)\b"),
-    ("Frontend", r"\b(front[\s-]?end|react|vue|angular|ui engineer|web developer|javascript|typescript)\b"),
-    ("Backend", r"\b(back[\s-]?end|api|java|golang|go|node(\.?js)?|python|php|laravel|\.net|c#|ruby|rails|django|scala|rust|c\+\+)\b"),
-    ("Software Engineering", r"\b(software|developer|programmer|engineer(ing)?|swe|sde|softwareentwicklung)\b"),
+    ("Mobile", r"\b(mobile|ios|android|flutter|dart|react native|xamarin|ionic|swift|kotlin)\b"),
+    ("Security", r"\b(cyber ?security|cyber|infosec|information security|appsec|devsecops|security|pentest(er|ing)?|"
+                 r"penetration|soc|siem|iam|pam|grc|threat|incident response|vulnerability|malware|forensics?|dfir|"
+                 r"red team|blue team|purple team|ethical hack(er|ing)|bug bounty|cryptograph(y|er)|zero trust|ciso|"
+                 r"identity (and|&) access|data protection|data privacy|"
+                 r"(it|ict|technology|information) (audit|auditor|risk|governance|compliance)|information systems? audit)\b"),
+    ("QA & Testing", r"\b(qa|quality assurance|quality engineer|test(er|ing)?|sdet|uat)\b"),
+    ("Other tech", r"\b(technical writer|documentation engineer|developer (advocate|relations|experience)|devrel)\b"),
+    ("IT & Support", r"\b(help ?desk|service desk|desktop support|technical support|tech support|it support|"
+                     r"end[\s-]user|it (technician|officer|manager|administrator|admin|specialist|assistant|analyst|"
+                     r"consultant|lead|director|coordinator|intern|attachment|operations|executive|trainer)|"
+                     r"ict|mis|information technology|computer (technician|operator)|sysadmin|"
+                     r"systems? (administrator|admin|support)|network|noc|telecom(munication)?s?|rf engineer|"
+                     r"transmission engineer|fib(re|er)|head of (it|ict)|cio|dba|database administrator)\b"),
+    ("DevOps & Cloud", r"\b(devops|sre|site reliability|platform|infrastructure|cloud|kubernetes|docker|openshift|"
+                       r"ansible|terraform|aws|azure|gcp|ci/cd|observability|release engineer|build engineer|linux|"
+                       r"unix|vmware|virtuali[sz]ation|storage|backup|middleware|data cent(er|re))\b"),
+    ("Software Engineering", r"\b(embedded|firmware|fpga|asic|vlsi|chip design|pcb|hardware|electronics|robotics|iot)\b"),
+    ("Design & Product", r"\b(design(er)?|ux|ui|user research(er)?|product (manager|management|owner|lead|analyst|"
+                         r"operations|director|specialist)|scrum master|agile|(project|program|programme|delivery) "
+                         r"(manager|lead|coordinator|officer)|business (systems )?analyst|systems analyst|"
+                         r"digital (products?|transformation))\b"),
+    ("Data & AI", r"\b(data|machine learning|ml|mlops|ai|llm|genai|generative ai|analytics|analyst|scientist|bi|"
+                  r"power ?bi|tableau|looker|etl|big data|spark|snowflake|dbt|statistician|biostatistician|quant|"
+                  r"nlp|computer vision|research|prompt engineer|chatbot|gis)\b"),
+    ("Frontend", r"\b(front[\s-]?end|react|vue|angular|svelte|next\.?js|nuxt|ui engineer|web developer|webmaster|"
+                 r"javascript|typescript|wordpress|shopify|magento|drupal|webflow)\b"),
+    ("Backend", r"\b(back[\s-]?end|api|java|golang|go|node(\.?js)?|python|php|laravel|\.net|c#|ruby|rails|django|"
+                r"flask|fastapi|spring|scala|rust|c\+\+|elixir|erlang|haskell|clojure|perl|graphql|microservices?|"
+                r"integration|mainframe|cobol)\b"),
+    ("Software Engineering", r"\b(software|developer|programmer|engineer(ing)?|swe|sde|softwareentwicklung|"
+                             r"game|unity|unreal|blockchain|web3|smart contracts?|solidity|rpa|uipath|low[\s-]?code|"
+                             r"cto|architect|tech lead)\b"),
+    # Enterprise systems roles that aren't developer jobs: "SAP Consultant", "ERP Officer".
+    ("IT & Support", r"\b(erp|sap|odoo|dynamics|navision|business central|netsuite|crm|salesforce|servicenow|"
+                     r"sharepoint|power (apps|automate|platform)|oracle|technology|it)\b"),
 ]
+
+
+def job_field(item: Item) -> str:
+    """The job's field, from its title, else its tags."""
+    return _first(_FIELD_RULES, item.title, "") or _first(_FIELD_RULES, " ".join(item.tags), "Other tech")
+
 
 JOB_TYPES = ["Full-time", "Part-time", "Contract", "Unspecified"]
 
@@ -120,12 +158,12 @@ def remote_label(item: Item) -> str:
     return loc
 
 
-def set_africa(item: Item) -> None:
-    """Fills in item.africa_country and item.africa_scope (see app.africa)."""
+def set_kenya(item: Item) -> None:
+    """Fills in item.kenya (see app.kenya)."""
     remote_from = remote_label(item) if item.work_mode == "Remote" else ""
-    item.africa_country, item.africa_scope = africa_scope(item.location, item.work_mode, remote_from)
-    if item.kind == "event" and item.africa_scope == "remote":
-        item.africa_scope = ""  # online events are open to everyone, not African events
+    item.kenya = kenya_scope(item.location, item.work_mode, remote_from)
+    if item.kind == "event" and item.kenya == "remote":
+        item.kenya = ""  # online events are open to everyone, not Kenyan events
 
 
 def _first(rules, text: str, default: str) -> str:
@@ -140,7 +178,7 @@ def classify(item: Item) -> None:
     title = item.title
     item.work_mode = work_mode(item)
     item.remote = item.work_mode in ("Remote", "Online")
-    set_africa(item)
+    set_kenya(item)
     if item.kind == "event":
         item.category = _first(_EVENT_RULES, " ".join([title, *item.tags]), "Other")
         item.level = item.job_type = ""
@@ -151,7 +189,7 @@ def classify(item: Item) -> None:
         level = _first(_HINT_LEVELS, item.level_hint, "")
     item.level = level or "Unspecified"
 
-    item.category = _first(_FIELD_RULES, title, "") or _first(_FIELD_RULES, " ".join(item.tags), "Other tech")
+    item.category = job_field(item)
 
     job_type = _first(_TYPE_RULES, title, "") or _first(_TYPE_RULES, item.type_hint, "")
     item.job_type = job_type or "Unspecified"

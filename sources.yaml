@@ -8,7 +8,6 @@ refresh_hours: 2   # don't re-scrape a source more often than this
 builtin:
   # --- jobs ---
   companies:    { enabled: true }   # career boards of the companies listed below
-  hubs:         { enabled: true }   # Amazon, Microsoft & Workday companies' African hubs (see hubs: below)
   early_career: { enabled: true }   # SimplifyJobs internship + new-grad lists, New-Grad-2027
   yc:           { enabled: true }   # Y Combinator startup jobs (HTML page, scraped)
   hn_hiring:    { enabled: true }   # "Ask HN: Who is hiring?" monthly thread
@@ -16,24 +15,29 @@ builtin:
   jobicy:       { enabled: true }   # remote jobs API (dev, engineering, data science)
   wwr:          { enabled: true }   # We Work Remotely, 6 RSS feeds
   arbeitnow:    { enabled: true }   # Europe (mostly Germany), on-site and remote
+  remoteok:       { enabled: true } # Remote OK, public JSON API
+  remotive:       { enabled: true } # Remotive, public JSON API
+  working_nomads: { enabled: true } # Working Nomads, public JSON API
+  nodesk:         { enabled: true } # NoDesk, RSS feed
+  dailyremote:    { enabled: true } # DailyRemote: software, data, DevOps, design pages
+  # --- Kenyan job boards ---
+  myjobmag:       { enabled: true }  # MyJobMag Kenya, IT section
+  brightermonday: { enabled: true }  # BrighterMonday Kenya, Software & Data section
+  jobwebkenya:    { enabled: true }  # Jobweb Kenya, RSS feed (all fields, filtered to tech)
+  corporate_staffing: { enabled: true }  # Corporate Staffing Services, jobs page
+  summit:         { enabled: true }  # Summit Recruitment & Search, vacancies feed
+  pigiame:        { enabled: true }  # PigiaMe jobs section
+  jobrapido:      { enabled: true }  # Jobrapido Kenya, searches for tech roles
+  ngo_jobs_africa: { enabled: true } # NGO Jobs in Africa, Kenya posts
+  opportunities_for_africans: { enabled: true }  # internships & graduate programmes tagged Kenya
   # --- events ---
   dev_events:   { enabled: true }   # dev.events: conferences, meetups, hackathons
-
-# Big employers' engineering hubs in Africa, from their own career-site search.
-# Amazon and Microsoft are always checked; add companies whose careers site runs
-# on Workday (URL like https://<host>/en-US/<site>) under `workday:`.
-hubs:
-  countries: [Kenya, South Africa, Nigeria, Egypt, Ghana, Rwanda, Morocco]
-  workday:
-    Mastercard: { host: mastercard.wd1.myworkdayjobs.com, tenant: mastercard, site: CorporateCareers }
-    Absa:       { host: absa.wd3.myworkdayjobs.com, tenant: absa, site: ABSAcareersite }
-    Cisco:      { host: cisco.wd5.myworkdayjobs.com, tenant: cisco, site: Cisco_Careers }
 
 # Companies whose own career boards are checked, by the platform they use.
 # The key is the company's board name in that platform's URL, e.g.
 #   https://boards.greenhouse.io/<key>   https://jobs.lever.co/<key>
 #   https://jobs.ashbyhq.com/<key>       https://apply.workable.com/<key>
-#   https://<key>.breezy.hr              https://jobs.smartrecruiters.com/<key>
+#   https://<key>.breezy.hr
 # Add any company you want to follow.
 companies:
   greenhouse:
@@ -128,15 +132,6 @@ companies:
     lucidmotors: Lucid Motors
     relativity: Relativity Space
     flexport: Flexport
-    # Africa
-    moniepoint: Moniepoint       # Nigeria
-    jumia: Jumia                 # pan-African
-    grey: Grey                   # Nigeria
-    branch: Branch               # Kenya, Nigeria
-    alxafrica: ALX Africa        # pan-African
-    luno: Luno                   # South Africa, Nigeria
-    ozow: Ozow                   # South Africa
-    entersekt: Entersekt         # South Africa
   lever:
     palantir: Palantir
     spotify: Spotify
@@ -147,9 +142,6 @@ companies:
     toptal: Toptal
     gopuff: Gopuff
     metabase: Metabase
-    # Africa
-    tala: Tala                   # Kenya
-    apolloagriculture: Apollo Agriculture   # Kenya, Zambia
   ashby:
     # AI
     openai: OpenAI
@@ -201,26 +193,10 @@ companies:
     vanta: Vanta
     drata: Drata
     ashby: Ashby
-    # Africa
-    andela: Andela               # pan-African
-    lemfi: LemFi                 # Nigeria, UK
-    m-kopa: M-KOPA               # Kenya, Ghana, Uganda, Nigeria
-    thndr: Thndr                 # Egypt
+    # Kenya
+    m-kopa: M-KOPA               # Nairobi HQ
   workable:
     huggingface: Hugging Face
-    # Africa
-    kuda: Kuda                   # Nigeria
-    fairmoney: FairMoney         # Nigeria
-    renmoney: Renmoney           # Nigeria
   breezy:
-    # Africa
-    busha: Busha                 # Nigeria, Kenya
-    gozem: Gozem                 # Togo, Gabon, Cameroon
-    lulalend: Lula               # South Africa
-    mukuru: Mukuru               # South Africa, Zimbabwe, Botswana
-    turaco: Turaco               # Kenya, Uganda, Nigeria
-    gokada: Gokada               # Nigeria
-    prospa: Prospa               # Nigeria
-  smartrecruiters:
-    # Africa
-    palmpay: PalmPay             # Nigeria
+    # Kenya
+    cellulant-group: Cellulant   # Nairobi HQ

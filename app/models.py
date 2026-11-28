@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from email.utils import parsedate_to_datetime
 
-MAX_AGE_HOURS = 48  # anything posted earlier than this is dropped
+WINDOW_HOURS = 48   # jobs and events older than this are dropped...
+MAX_AGE_HOURS = 72  # ...except Kenya listings, kept for 3 days. Nothing older is kept.
 
 
 @dataclass
@@ -29,8 +30,7 @@ class Item:
     category: str = ""    # jobs: Frontend, Backend, Data & AI, ...; events: Conference, Hackathon, ...
     job_type: str = ""    # jobs: Full-time, Part-time, Contract, Unspecified
     work_mode: str = ""   # jobs: Remote, Hybrid, On-site (or "" if unknown); events: Online, In person
-    africa_country: str = ""  # African country the listing is in, e.g. "Kenya"
-    africa_scope: str = ""    # "in" (located in Africa), "remote" (remote, open to Africa) or ""
+    kenya: str = ""       # "in" (located in Kenya), "remote" (remote, open to Kenya) or ""
     level_hint: str = ""  # the source's own seniority label, if it has one
     type_hint: str = ""   # the source's own employment-type label
     mode_hint: str = ""   # the source's own work mode (Remote / Hybrid / On-site), if it states one

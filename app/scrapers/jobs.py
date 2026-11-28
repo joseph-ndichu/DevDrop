@@ -7,7 +7,7 @@ import json
 import re
 from datetime import datetime, timedelta, timezone
 
-from ..africa import countries_in
+from ..kenya import in_kenya
 from ..classify import years_to_level
 from ..models import MAX_AGE_HOURS, Item, parse_date
 from ..tech import is_tech
@@ -62,9 +62,9 @@ def himalayas(max_pages: int = 30) -> list[Item]:
             if not is_tech(j["title"]) or re.search(r"\btest job\b", j["title"], re.I):
                 continue
             regions = j.get("locationRestrictions") or []
-            # Only the first 3 are shown, so put African countries first: a job open to
+            # Only the first 3 are shown, so put Kenya first: a job open to
             # "Albania, …, Kenya, … (+49 more)" must still read as open to Kenya.
-            regions = sorted(regions, key=lambda r: not countries_in(r))
+            regions = sorted(regions, key=lambda r: not in_kenya(r))
             items.append(Item(
                 id=f"himalayas:{j.get('guid') or j['applicationLink']}", kind="job", source="Himalayas",
                 title=j["title"], org=j.get("companyName") or "",

@@ -13,7 +13,7 @@
         <span class="logo" aria-hidden="true">&lt;/&gt;</span>
         <div>
           <h1>DevDrop</h1>
-          <p class="sub">Only what was posted in the last 48 hours</p>
+          <p class="sub">Only what was posted in the last 48 hours (3 days for Kenya)</p>
         </div>
       </div>
       <button id="refreshBtn" class="btn" type="button">Refresh</button>
@@ -25,17 +25,18 @@
       <div class="segmented" id="kindTabs" role="tablist" aria-label="Type">
         <button role="tab" data-kind="job" aria-selected="true">Jobs <span class="n" id="nJob"></span></button>
         <button role="tab" data-kind="event">Events <span class="n" id="nEvent"></span></button>
-        <button role="tab" data-kind="africa" title="Jobs in Africa, or remote and open to Africa">Africa <span class="n" id="nAfrica"></span></button>
+        <button role="tab" data-kind="kenya" title="Jobs in Kenya, or remote and open to Kenya">Kenya <span class="n" id="nKenya"></span></button>
       </div>
       <div class="segmented" id="hoursTabs" aria-label="Posted within">
         <button data-hours="24" aria-selected="true">Last 24 h</button>
         <button data-hours="48">2 days</button>
+        <button data-hours="72" id="threeDays" hidden title="Kenya only: posted 2–3 days ago">3 days</button>
       </div>
       <div class="chips" id="workModeChips" role="group" aria-label="Work mode"></div>
       <input id="search" type="search" placeholder="Search: python, react, Nairobi…" aria-label="Search">
     </div>
-    <div class="wrap filters-inner second" id="countryRow" hidden>
-      <div class="chips" id="countryChips" role="group" aria-label="Country"></div>
+    <div class="wrap filters-inner second" id="kenyaRow" hidden>
+      <div class="chips" id="kenyaChips" role="group" aria-label="In Kenya or remote"></div>
     </div>
     <div class="wrap filters-inner second">
       <div class="chips" id="levelChips" role="group" aria-label="Level"></div>
@@ -54,15 +55,20 @@
 
   <footer class="footer">
     <div class="wrap">
-      Jobs from companies' own career boards (Greenhouse, Lever, Ashby, Workable, Breezy, SmartRecruiters),
-      Amazon, Microsoft and Workday career sites,
+      Jobs from companies' own career boards (Greenhouse, Lever, Ashby, Workable, Breezy),
       <a href="https://github.com/SimplifyJobs">SimplifyJobs</a> and
       <a href="https://github.com/vanshb03/New-Grad-2027">New-Grad-2027</a> lists,
       <a href="https://www.ycombinator.com/jobs">Y Combinator</a>, <a href="https://news.ycombinator.com">Hacker News</a>,
       <a href="https://himalayas.app">Himalayas</a>, <a href="https://jobicy.com">Jobicy</a>,
       <a href="https://weworkremotely.com">We Work Remotely</a>, <a href="https://www.arbeitnow.com">Arbeitnow</a>,
-      <a href="https://www.myjobmag.co.ke">MyJobMag</a>, <a href="https://www.brightermonday.co.ke">BrighterMonday</a>
-      and <a href="https://www.jobberman.com">Jobberman</a>.
+      <a href="https://remoteok.com">Remote OK</a>, <a href="https://remotive.com">Remotive</a>,
+      <a href="https://www.workingnomads.com">Working Nomads</a>, <a href="https://nodesk.co">NoDesk</a>,
+      <a href="https://dailyremote.com">DailyRemote</a>.
+      Kenya: <a href="https://www.myjobmag.co.ke">MyJobMag</a>, <a href="https://www.brightermonday.co.ke">BrighterMonday</a>,
+      <a href="https://jobwebkenya.com">Jobweb Kenya</a>, <a href="https://www.corporatestaffing.co.ke">Corporate Staffing</a>,
+      <a href="https://summitrecruitment-search.com">Summit Recruitment</a>, <a href="https://www.pigiame.co.ke/jobs">PigiaMe</a>,
+      <a href="https://ke.jobrapido.com">Jobrapido</a>, <a href="https://ngojobsinafrica.com">NGO Jobs in Africa</a>,
+      <a href="https://www.opportunitiesforafricans.com">Opportunities For Africans</a>.
       Events from <a href="https://dev.events">dev.events</a>.
     </div>
   </footer>

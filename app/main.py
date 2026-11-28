@@ -25,7 +25,7 @@ STATIC = Path(__file__).resolve().parent.parent / "static"
 
 def _scheduler() -> None:
     """Re-scrape in the background; refresh_hours in sources.yaml decides what's due.
-    Every 15 minutes it also drops anything that has aged past 48 hours."""
+    Every 15 minutes it also drops anything that has aged past 48 hours (3 days for Kenya)."""
     while True:
         refresh.run()
         time.sleep(15 * 60)
@@ -42,13 +42,24 @@ app = FastAPI(title="DevDrop", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
 
 
+@app.middleware("http")
+async def always_revalidate(request, call_next):
+    """Make browsers check for a newer page and scripts on every visit.
+    Without this they reuse cached copies after an update, and an old script
+    paired with a new page can leave the page blank."""
+    response = await call_next(request)
+    if request.url.path == "/" or request.url.path.startswith("/static/"):
+        response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
 @app.get("/")
 def index():
     return FileResponse(STATIC / "index.html")
 
 
 @app.get("/api/items")
-def items(hours: int = Query(48, ge=1, le=48)):
+def items(hours: int = Query(72, ge=1, le=72)):
     return {"items": db.recent(hours), "status": refresh.status}
 
 

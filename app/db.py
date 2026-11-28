@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from .classify import remote_label
-from .models import MAX_AGE_HOURS, Item, cutoff_iso, iso, now_iso
+from .models import MAX_AGE_HOURS, WINDOW_HOURS, Item, cutoff_iso, iso, now_iso
 
 DB_PATH = Path(__file__).resolve().parent.parent / "data" / "app.db"
 _lock = threading.Lock()
@@ -34,10 +34,14 @@ _conn.executescript(
 )
 # Columns added after the first version: add them to an existing database.
 _cols = {r["name"] for r in _conn.execute("PRAGMA table_info(listings)")}
-for _col in ("level", "category", "job_type", "work_mode", "africa_country", "africa_scope"):
+for _col in ("level", "category", "job_type", "work_mode", "kenya"):
     if _col not in _cols:
         _conn.execute(f"ALTER TABLE listings ADD COLUMN {_col} TEXT")
         _conn.execute("DELETE FROM meta WHERE key LIKE 'last_run:%'")  # re-scrape to fill it in
+# Columns from removed features.
+for _col in ("africa_country", "africa_scope"):
+    if _col in _cols:
+        _conn.execute(f"ALTER TABLE listings DROP COLUMN {_col}")
 _conn.commit()
 
 
@@ -47,20 +51,19 @@ def upsert(items: list[Item]) -> None:
             """
             INSERT INTO listings (id, kind, source, title, url, posted_at, org, location,
                                   remote, starts_at, salary, tags, level, category, job_type, work_mode,
-                                  africa_country, africa_scope)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                                  kenya)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
             ON CONFLICT(id) DO UPDATE SET
                 title=excluded.title, url=excluded.url, posted_at=excluded.posted_at,
                 org=excluded.org, location=excluded.location, remote=excluded.remote,
                 starts_at=excluded.starts_at, salary=excluded.salary, tags=excluded.tags,
                 level=excluded.level, category=excluded.category, job_type=excluded.job_type,
-                work_mode=excluded.work_mode, africa_country=excluded.africa_country,
-                africa_scope=excluded.africa_scope
+                work_mode=excluded.work_mode, kenya=excluded.kenya
             """,
             [
                 (i.id, i.kind, i.source, i.title, i.url, i.posted_at, i.org, i.location,
                  int(i.remote), i.starts_at, i.salary, json.dumps(i.tags),
-                 i.level, i.category, i.job_type, i.work_mode, i.africa_country, i.africa_scope)
+                 i.level, i.category, i.job_type, i.work_mode, i.kenya)
                 for i in items
             ],
         )
@@ -103,7 +106,7 @@ def stored(where: str = "1=1") -> list[Item]:
              remote=bool(r["remote"]), starts_at=r["starts_at"], salary=r["salary"] or "",
              tags=json.loads(r["tags"] or "[]"), level=r["level"] or "", category=r["category"] or "",
              job_type=r["job_type"] or "", work_mode=r["work_mode"] or "",
-             africa_country=r["africa_country"] or "", africa_scope=r["africa_scope"] or "")
+             kenya=r["kenya"] or "")
         for r in rows
     ]
 
@@ -115,9 +118,11 @@ def delete(ids: list[str]) -> None:
 
 
 def prune() -> int:
-    """Delete everything posted more than 48 h ago."""
+    """Delete listings older than 48 h, or 3 days for Kenya listings."""
     with _lock:
-        n = _conn.execute("DELETE FROM listings WHERE posted_at < ?", (cutoff_iso(),)).rowcount
+        n = _conn.execute(
+            "DELETE FROM listings WHERE posted_at < ? OR (posted_at < ? AND COALESCE(kenya, '') = '')",
+            (cutoff_iso(MAX_AGE_HOURS), cutoff_iso(WINDOW_HOURS))).rowcount
         _conn.commit()
     return n
 

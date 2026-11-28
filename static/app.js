@@ -8,23 +8,23 @@ const store = {
 // Same lists and order as app/classify.py
 const LEVELS = ["Internship", "Junior", "Mid", "Senior", "Lead / Staff", "Manager", "Unspecified"];
 const JOB_FIELDS = ["Full-stack", "Frontend", "Backend", "Mobile", "Data & AI", "DevOps & Cloud",
-  "Security", "QA & Testing", "Design & Product", "Software Engineering", "Other tech"];
+  "IT & Support", "Security", "QA & Testing", "Design & Product", "Software Engineering", "Other tech"];
 const EVENT_TYPES = ["Conference", "Hackathon", "Workshop", "Meetup", "Webinar", "Other"];
 const JOB_TYPES = ["Full-time", "Part-time", "Contract", "Unspecified"];
-const WORK_MODES = { job: ["Remote", "Hybrid", "On-site"], event: ["Online", "In person"], africa: ["Remote", "Hybrid", "On-site"] };
-const HOME_COUNTRY = "Kenya";                  // listed first on the Africa tab
-const REMOTE_AFRICA = "Remote, open to Africa"; // country chip for remote jobs open to Africa
+const WORK_MODES = { job: ["Remote", "Hybrid", "On-site"], event: ["Online", "In person"], kenya: ["Remote", "Hybrid", "On-site"] };
+// Kenya tab chips -> the listing's `kenya` value.
+const KENYA_SCOPES = { "In Kenya": "in", "Remote, open to Kenya": "remote" };
 
 const state = {
   items: [],
-  kind: ["job", "event", "africa"].includes(store.get("kind", "job")) ? store.get("kind", "job") : "job",
-  hours: store.get("window", 24),   // 24 = posted 0–24 h ago, 48 = posted 24–48 h ago
+  kind: ["job", "event", "kenya"].includes(store.get("kind", "job")) ? store.get("kind", "job") : "job",
+  hours: store.get("window", 24),   // 24 = posted 0–24 h ago, 48 = 24–48 h ago, 72 = 48–72 h ago (Kenya only)
   source: "",
   level: store.get("level", ""),        // jobs tab only
   jobType: store.get("jobType", ""),    // jobs tab only
   category: "",                         // job field or event type; cleared when switching tabs
   workMode: "",                         // cleared when switching tabs
-  country: store.get("country", ""),    // Africa tab: a country, REMOTE_AFRICA, or "" for all
+  kenyaScope: store.get("kenyaScope", ""),  // Kenya tab: a KENYA_SCOPES label, or "" for both
   query: "",
   shown: 100,
 };
@@ -33,7 +33,7 @@ const $ = (s) => document.querySelector(s);
 const els = {
   results: $("#results"), status: $("#statusLine"), refresh: $("#refreshBtn"),
   source: $("#sourceFilter"), search: $("#search"), levels: $("#levelChips"),
-  countryRow: $("#countryRow"), countries: $("#countryChips"),
+  kenyaRow: $("#kenyaRow"), kenyaScopes: $("#kenyaChips"),
   workModes: $("#workModeChips"), category: $("#categoryFilter"), jobType: $("#typeFilter"),
 };
 
@@ -65,26 +65,23 @@ function countBy(list, key) {
 }
 
 // ---------- filtering ----------
-// The two windows don't overlap: "Last 24 h" is 0–24 h old, "2 days" is 24–48 h old.
-function windowBounds() {
+// The windows don't overlap: "Last 24 h" is 0–24 h old, "2 days" is 24–48 h old and,
+// on the Kenya tab only, "3 days" is 48–72 h old. Other tabs stop at 2 days.
+function windowBounds(kind = state.kind) {
   const now = Date.now();
-  return state.hours === 24 ? [now - 24 * H, Infinity] : [now - 48 * H, now - 24 * H];
+  const hours = state.hours === 72 && kind !== "kenya" ? 48 : state.hours;
+  return hours === 24 ? [now - 24 * H, Infinity] : [now - hours * H, now - (hours - 24) * H];
 }
 
-// Which listings belong on a tab. The Africa tab holds jobs located in Africa
-// or remote and open to Africa; its events are listed separately (africaEvents).
+// Which listings belong on a tab. The Kenya tab holds jobs located in Kenya or
+// remote and open to Kenya; its events are listed separately (kenyaEvents).
 function onTab(it, kind) {
-  return kind === "africa" ? it.kind === "job" && !!it.africa_scope : it.kind === kind;
-}
-
-function matchesCountry(it) {
-  if (!state.country) return true;
-  return state.country === REMOTE_AFRICA ? it.africa_scope === "remote" : it.africa_country === state.country;
+  return kind === "kenya" ? it.kind === "job" && !!it.kenya : it.kind === kind;
 }
 
 // `kind` defaults to the open tab; `ignore` skips one filter (used to count that filter's options).
 function filtered(kind = state.kind, ignore = "") {
-  const [from, to] = windowBounds();
+  const [from, to] = windowBounds(kind);
   const q = state.query.trim().toLowerCase();
   const isOpenTab = kind === state.kind;  // tab-specific filters only apply to the open tab's counts
   const jobs = kind !== "event";
@@ -92,14 +89,14 @@ function filtered(kind = state.kind, ignore = "") {
   const jobType = jobs && ignore !== "jobType" ? state.jobType : "";
   const category = isOpenTab && ignore !== "category" ? state.category : "";
   const workMode = isOpenTab && ignore !== "workMode" ? state.workMode : "";
-  const country = kind === "africa" && ignore !== "country";
+  const kenyaScope = kind === "kenya" && ignore !== "kenyaScope" ? KENYA_SCOPES[state.kenyaScope] : "";
   const seen = new Set();
   const out = [];
   for (const it of state.items) {
     const posted = new Date(it.posted_at).getTime();
     if (posted < from || posted >= to) continue;   // strict: outside the selected window -> gone
     if (!onTab(it, kind)) continue;
-    if (country && !matchesCountry(it)) continue;
+    if (kenyaScope && it.kenya !== kenyaScope) continue;
     if (level && it.level !== level) continue;
     if (jobType && it.job_type !== jobType) continue;
     if (category && it.category !== category) continue;
@@ -115,13 +112,12 @@ function filtered(kind = state.kind, ignore = "") {
   return out; // the API already sorts newest first
 }
 
-// Events in Africa for the Africa tab, in the selected window and country.
-function africaEvents() {
-  const [from, to] = windowBounds();
+// Events in Kenya for the Kenya tab, in the selected window.
+function kenyaEvents() {
+  const [from, to] = windowBounds("kenya");
   return state.items.filter((it) => {
     const posted = new Date(it.posted_at).getTime();
-    return it.kind === "event" && it.africa_scope === "in" && posted >= from && posted < to
-      && (!state.country || state.country === REMOTE_AFRICA || it.africa_country === state.country);
+    return it.kind === "event" && it.kenya === "in" && posted >= from && posted < to;
   });
 }
 
@@ -162,11 +158,11 @@ function card(it) {
 }
 
 // A row of toggle chips: click one to filter by it, click it again to clear.
-function chips(values, counts, selected, attr, highlight = "") {
+function chips(values, counts, selected, attr) {
   return values.map((v) => {
     const n = counts[v] || 0;
     const on = selected === v;
-    return `<button class="chip${v === highlight ? " home" : ""}" data-${attr}="${esc(v)}" aria-pressed="${on}" ${!n && !on ? "disabled" : ""}>${esc(v)} <span class="n">${n}</span></button>`;
+    return `<button class="chip" data-${attr}="${esc(v)}" aria-pressed="${on}" ${!n && !on ? "disabled" : ""}>${esc(v)} <span class="n">${n}</span></button>`;
   }).join("");
 }
 
@@ -179,17 +175,12 @@ function renderControls() {
   const jobs = state.kind !== "event";
   els.workModes.innerHTML = chips(WORK_MODES[state.kind], countBy(filtered(state.kind, "workMode"), "work_mode"), state.workMode, "mode");
 
-  // Africa tab: country chips, home country first, then by number of jobs.
-  els.countryRow.hidden = state.kind !== "africa";
-  if (state.kind === "africa") {
-    const pool = filtered("africa", "country");
-    const counts = countBy(pool.filter((i) => i.africa_scope === "in"), "africa_country");
-    counts[REMOTE_AFRICA] = pool.filter((i) => i.africa_scope === "remote").length;
-    const countries = Object.keys(counts).filter((c) => c && c !== REMOTE_AFRICA && c !== HOME_COUNTRY)
-      .sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
-    const order = [HOME_COUNTRY, ...countries, REMOTE_AFRICA];
-    if (state.country && !order.includes(state.country)) order.splice(1, 0, state.country);
-    els.countries.innerHTML = chips(order, counts, state.country, "country", HOME_COUNTRY);
+  // Kenya tab: in Kenya vs remote and open to Kenya.
+  els.kenyaRow.hidden = state.kind !== "kenya";
+  if (state.kind === "kenya") {
+    const byScope = countBy(filtered("kenya", "kenyaScope"), "kenya");
+    const counts = Object.fromEntries(Object.entries(KENYA_SCOPES).map(([label, v]) => [label, byScope[v] || 0]));
+    els.kenyaScopes.innerHTML = chips(Object.keys(KENYA_SCOPES), counts, state.kenyaScope, "scope");
   }
 
   els.levels.hidden = !jobs;
@@ -207,14 +198,13 @@ function renderControls() {
 function render() {
   $("#nJob").textContent = filtered("job").length;
   $("#nEvent").textContent = filtered("event").length;
-  $("#nAfrica").textContent = filtered("africa").length;
+  $("#nKenya").textContent = filtered("kenya").length;
   renderControls();
 
   const items = filtered();
-  const label = state.hours === 24 ? "Posted in the last 24 hours" : "Posted 2 days ago";
-  const where = state.kind !== "africa" ? ""
-    : state.country === REMOTE_AFRICA ? " · remote, open to Africa"
-      : state.country ? ` · ${esc(state.country)}` : " · in Africa or remote-friendly";
+  const label = { 24: "Posted in the last 24 hours", 48: "Posted 2 days ago", 72: "Posted 3 days ago" }[state.hours];
+  const where = state.kind !== "kenya" ? ""
+    : state.kenyaScope ? ` · ${esc(state.kenyaScope[0].toLowerCase() + state.kenyaScope.slice(1))}` : " · in Kenya or remote, open to Kenya";
   const n = state.shown;
   let html = items.length
     ? `<h2 class="group-title">${label}${where} <span class="n">${items.length}</span></h2>
@@ -224,11 +214,11 @@ function render() {
       ? `Nothing ${label.toLowerCase()}${where} matches your filters.`
       : "Collecting listings… the first scrape takes about a minute."}</p>`;
 
-  if (state.kind === "africa") {
-    const events = africaEvents();
-    html += `<h2 class="group-title">Events in Africa <span class="n">${events.length}</span></h2>` + (events.length
+  if (state.kind === "kenya") {
+    const events = kenyaEvents();
+    html += `<h2 class="group-title">Events in Kenya <span class="n">${events.length}</span></h2>` + (events.length
       ? `<ol class="results">${events.map(card).join("")}</ol>`
-      : `<p class="section-note">No tech events in Africa ${label.toLowerCase()}.</p>`);
+      : `<p class="section-note">No tech events in Kenya ${label.toLowerCase()}.</p>`);
   }
   els.results.innerHTML = html;
 }
@@ -250,7 +240,7 @@ function fillSources() {
 // ---------- data ----------
 async function loadItems() {
   try {
-    const data = await (await fetch("/api/items?hours=48")).json();
+    const data = await (await fetch("/api/items?hours=72")).json();
     state.items = data.items;
     fillSources();
     showStatus(data.status);
@@ -306,9 +296,17 @@ function selectTab(container, attr, value) {
 }
 const resetPaging = () => { state.shown = 100; };
 
+// "3 days" is on the Kenya tab only; leaving it falls back to "2 days".
+function syncWindowTabs() {
+  $("#threeDays").hidden = state.kind !== "kenya";
+  if (state.kind !== "kenya" && state.hours === 72) state.hours = 48;
+  selectTab($("#hoursTabs"), "hours", state.hours);
+}
+
 bindSegmented($("#kindTabs"), "kind", (v) => {
   state.kind = v;
   store.set("kind", v);
+  syncWindowTabs();
   // Fields, event types, work modes and sources differ between the tabs.
   state.category = "";
   state.workMode = "";
@@ -319,7 +317,7 @@ bindSegmented($("#kindTabs"), "kind", (v) => {
 selectTab($("#kindTabs"), "kind", state.kind);
 
 bindSegmented($("#hoursTabs"), "hours", (v) => { state.hours = +v; store.set("window", state.hours); resetPaging(); render(); window.scrollTo(0, 0); });
-selectTab($("#hoursTabs"), "hours", state.hours);
+syncWindowTabs();
 
 function bindChips(container, attr, key, persist) {
   container.addEventListener("click", (e) => {
@@ -332,7 +330,7 @@ function bindChips(container, attr, key, persist) {
 }
 bindChips(els.levels, "level", "level", true);
 bindChips(els.workModes, "mode", "workMode", false);
-bindChips(els.countries, "country", "country", true);
+bindChips(els.kenyaScopes, "scope", "kenyaScope", true);
 
 els.source.addEventListener("change", () => { state.source = els.source.value; resetPaging(); render(); });
 els.category.addEventListener("change", () => { state.category = els.category.value; resetPaging(); render(); });

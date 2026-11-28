@@ -1,8 +1,8 @@
 """Jobs straight from tech companies' own career boards.
 
 Most tech companies post jobs through an applicant-tracking system, and these
-publish free, official JSON job-board APIs: Greenhouse, Lever, Ashby, Workable,
-Breezy and SmartRecruiters. This is where listings originate (LinkedIn and others
+publish free, official JSON job-board APIs: Greenhouse, Lever, Ashby, Workable
+and Breezy. This is where listings originate (LinkedIn and others
 re-list them later), and each says exactly when the job was published.
 
 Which companies to check is configured under `companies:` in sources.yaml.
@@ -121,27 +121,8 @@ def breezy(slug: str, name: str) -> list[Item]:
     return items
 
 
-def smartrecruiters(slug: str, name: str) -> list[Item]:
-    data = get(f"https://api.smartrecruiters.com/v1/companies/{slug}/postings", params={"limit": 100}).json()
-    items = []
-    for j in data.get("content", []):
-        loc = j.get("location") or {}
-        company = (j.get("company") or {}).get("identifier") or slug
-        items.append(Item(
-            id=f"smartrecruiters:{slug}:{j['id']}", kind="job", source="Company boards",
-            title=j["name"].strip(), org=name, url=f"https://jobs.smartrecruiters.com/{company}/{j['id']}",
-            location=loc.get("fullLocation") or ", ".join(p for p in [loc.get("city"), loc.get("country", "").upper()] if p),
-            posted_at=parse_date(j.get("releasedDate")),
-            tags=[t for t in [(j.get("department") or {}).get("label")] if t],
-            type_hint=(j.get("typeOfEmployment") or {}).get("label", ""),
-            level_hint=(j.get("experienceLevel") or {}).get("label", ""),
-            mode_hint="Remote" if loc.get("remote") else "Hybrid" if loc.get("hybrid") else "",
-        ))
-    return items
-
-
 PLATFORMS = {"greenhouse": greenhouse, "lever": lever, "ashby": ashby, "workable": workable,
-             "breezy": breezy, "smartrecruiters": smartrecruiters}
+             "breezy": breezy}
 
 
 def company_boards(companies: dict) -> list[Item]:
