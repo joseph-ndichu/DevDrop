@@ -1,11 +1,12 @@
 # DevDrop
 
-Fresh tech jobs and events for engineers, posted in the last 48 hours.
+Fresh tech jobs and events for engineers, posted in the last 48 hours
+(3 days for jobs in Kenya).
 
 A local web app that scrapes tech jobs and tech events with
 [Scrapling](https://github.com/D4Vinci/Scrapling) and shows **only listings posted
-in the last 24 or 48 hours**. A listing with no posting date, or an older one,
-is dropped.
+in the last 24 or 48 hours**, or the last 3 days on the Kenya tab. A listing
+with no posting date, or an older one, is dropped.
 
 ## Run it
 
@@ -44,7 +45,7 @@ they publish when an event happens, but not when it was posted.
 
 ## Rules
 
-- **48-hour window**: a listing is kept only if its source states a posting
+- **48-hour window (3 days for Kenya)**: a listing is kept only if its source states a posting
   date within the last 48 hours (`app/models.py: is_fresh`). Listings in Kenya
   or open to Kenya are kept for 3 days, and the Kenya tab has a "3 days" button
   for those posted 2–3 days ago. Stored listings are deleted once they age out.
